@@ -23,6 +23,7 @@ import com.rudra.ispnetworktool.presentation.portchecker.PortCheckerScreen
 import com.rudra.ispnetworktool.presentation.subnet.SubnetCalculatorScreen
 import com.rudra.ispnetworktool.presentation.traceroute.TracerouteScreen
 import com.rudra.ispnetworktool.presentation.whois.WhoisScreen
+import com.rudra.ispnetworktools.ui.NetworkCalculatorScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
@@ -60,12 +61,18 @@ fun NavigationGraph(navController: NavHostController) {
         composable("whoislookup") {
             WhoisScreen()
         }
+        composable("NetworkCalculator") {
+            NetworkCalculatorScreen()
+        }
+      //  composable("SpeedTest") {
+     //       SpeedTestScreen()
+     //   }
     }
 }
 
 @Composable
 fun ToolsScreen(navController: NavHostController) {
-    val tools = listOf("Ping", "Traceroute", "DNS Lookup", "IP Info", "Subnet Calculator", "Port Checker", "WHOIS Lookup")
+    val tools = listOf("Ping", "Traceroute", "DNS Lookup", "IP Info", "Subnet Calculator","NetworkCalculator" ,"Port Checker", "WHOIS Lookup")
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         items(tools) { tool ->
             Text(

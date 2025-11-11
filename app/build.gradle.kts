@@ -94,4 +94,8 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
+    // other
+    implementation("commons-net:commons-net:3.9.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+
 }
