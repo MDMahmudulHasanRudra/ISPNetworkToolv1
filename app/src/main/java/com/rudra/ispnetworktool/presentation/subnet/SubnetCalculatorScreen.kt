@@ -1,6 +1,7 @@
 package com.rudra.ispnetworktool.presentation.subnet
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,16 +39,22 @@ fun SubnetCalculatorScreen(viewModel: SubnetCalculatorViewModel = hiltViewModel(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Subnet Calculator") })
+            TopAppBar(
+                title = { Text("Subnet Calculator", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -90,28 +99,27 @@ fun SubnetCalculatorScreen(viewModel: SubnetCalculatorViewModel = hiltViewModel(
             }
 
             state.subnetInfo?.let { info ->
-                SubnetInfoCard(info)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .shadow(4.dp, RoundedCornerShape(12.dp)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Subnet Details", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Network Address: ${info.networkAddress}")
+                        Text("Broadcast Address: ${info.broadcastAddress}")
+                        Text("Netmask: ${info.netmask}")
+                        Text("Host Range: ${info.hostRange}")
+                        Text("Total Usable Hosts: ${info.totalHosts}")
+                    }
+                }
             }
-        }
-    }
-}
-
-@Composable
-fun SubnetInfoCard(info: com.rudra.ispnetworktool.data.models.SubnetInfo) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Subnet Details", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Network Address: ${info.networkAddress}")
-            Text("Broadcast Address: ${info.broadcastAddress}")
-            Text("Netmask: ${info.netmask}")
-            Text("Host Range: ${info.hostRange}")
-            Text("Total Usable Hosts: ${info.totalHosts}")
         }
     }
 }

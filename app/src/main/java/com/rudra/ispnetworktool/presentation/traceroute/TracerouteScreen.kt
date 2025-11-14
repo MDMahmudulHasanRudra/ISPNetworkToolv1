@@ -1,6 +1,7 @@
 package com.rudra.ispnetworktool.presentation.traceroute
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,11 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.rudra.ispnetworktool.data.models.TracerouteResult
@@ -37,20 +41,26 @@ fun TracerouteScreen(viewModel: TracerouteViewModel = hiltViewModel()) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Traceroute") })
+            TopAppBar(
+                title = { Text("Traceroute", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
@@ -59,16 +69,10 @@ fun TracerouteScreen(viewModel: TracerouteViewModel = hiltViewModel()) {
                     label = { Text("Host") },
                     modifier = Modifier.weight(1f)
                 )
-                Button(
-                    onClick = { viewModel.startTraceroute(host) },
-                    enabled = !state.isLoading
-                ) {
+                Button(onClick = { viewModel.startTraceroute(host) }, enabled = !state.isLoading) {
                     Text("Trace")
                 }
-                Button(
-                    onClick = { viewModel.stopTraceroute() },
-                    enabled = state.isLoading
-                ) {
+                Button(onClick = { viewModel.stopTraceroute() }, enabled = state.isLoading) {
                     Text("Stop")
                 }
             }
@@ -95,12 +99,16 @@ fun TracerouteScreen(viewModel: TracerouteViewModel = hiltViewModel()) {
             }
 
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                CircularProgressIndicator(modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally))
             }
 
             LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
                 items(state.results) { result ->
-                    Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).shadow(2.dp, RoundedCornerShape(12.dp)),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
                         when (result) {
                             is TracerouteResult.Hop -> Text("${result.hop}. ${result.ip} - ${result.rtt}ms", modifier = Modifier.padding(16.dp))
                             is TracerouteResult.Failure -> Text("Error: ${result.error}", modifier = Modifier.padding(16.dp))

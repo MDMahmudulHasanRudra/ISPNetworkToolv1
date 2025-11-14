@@ -20,6 +20,7 @@ import com.rudra.ispnetworktool.presentation.history.HistoryScreen
 import com.rudra.ispnetworktool.presentation.ipinfo.IpInfoScreen
 import com.rudra.ispnetworktool.presentation.ping.PingScreen
 import com.rudra.ispnetworktool.presentation.portchecker.PortCheckerScreen
+import com.rudra.ispnetworktool.presentation.settings.SettingsScreen
 import com.rudra.ispnetworktool.presentation.subnet.SubnetCalculatorScreen
 import com.rudra.ispnetworktool.presentation.traceroute.TracerouteScreen
 import com.rudra.ispnetworktool.presentation.whois.WhoisScreen
@@ -80,12 +81,5 @@ fun ToolsScreen(navController: NavHostController) {
                 modifier = Modifier.clickable { navController.navigate(tool.replace(" ", "").lowercase()) }
             )
         }
-    }
-}
-
-@Composable
-fun SettingsScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Settings Screen")
     }
 }

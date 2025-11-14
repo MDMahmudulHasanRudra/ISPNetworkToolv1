@@ -12,30 +12,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Public
-import androidx.compose.material.icons.outlined.Route
+import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Calculate
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -48,28 +41,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.rudra.ispnetworktool.presentation.ipinfo.InfoCard
-import com.rudra.ispnetworktool.presentation.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     val tools = listOf(
         ToolItem("Ping", Icons.Outlined.Security, Color(0xFF4CAF50)),
@@ -78,7 +63,8 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
         ToolItem("IP Info", Icons.Outlined.Info, Color(0xFFFF9800)),
         ToolItem("Subnet Calculator", Icons.Outlined.Calculate, Color(0xFF607D8B)),
         ToolItem("Port Checker", Icons.Outlined.Visibility, Color(0xFFE91E63)),
-        ToolItem("WHOIS Lookup", Icons.Outlined.Public, Color(0xFF00BCD4))
+        ToolItem("WHOIS Lookup", Icons.Outlined.Public, Color(0xFF2196F3)),
+        ToolItem("NetworkCalculator", Icons.Outlined.Route, Color(0xFF2196F3)),
     )
 
     val filteredTools = tools.filter {
@@ -97,8 +83,6 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         },
@@ -121,14 +105,14 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
             )
 
             // System Info Card with enhanced styling
-            state.ipInfo?.let { ipInfo ->
+            state.ipInfo?.let {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                         .shadow(8.dp, RoundedCornerShape(16.dp)),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -142,9 +126,9 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-                        InfoRow("Public IP", ipInfo.publicIp ?: "Unknown")
-                        InfoRow("Local IP", ipInfo.localIp ?: "Unknown")
-                        InfoRow("Gateway", ipInfo.gateway ?: "Unknown")
+                        InfoRow("Public IP", it.publicIp)
+                        InfoRow("Local IP", it.localIp)
+                        InfoRow("Gateway", it.gateway)
                     }
                 }
             }
@@ -180,49 +164,6 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
                 }
             }
         }
-    }
-}
-
-@Composable
-fun SearchBar(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onClearQuery: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(4.dp, RoundedCornerShape(12.dp)),
-            placeholder = { Text("Search tools...") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = onClearQuery) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Clear search",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(
-                onSearch = { /* Handle search */ }
-            ),
-            shape = RoundedCornerShape(12.dp),
-            singleLine = true
-        )
     }
 }
 
@@ -303,9 +244,3 @@ fun InfoRow(label: String, value: String) {
         )
     }
 }
-
-data class ToolItem(
-    val name: String,
-    val icon: ImageVector,
-    val color: Color
-)

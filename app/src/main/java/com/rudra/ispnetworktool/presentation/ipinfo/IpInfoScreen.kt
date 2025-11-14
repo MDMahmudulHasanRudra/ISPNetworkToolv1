@@ -1,6 +1,7 @@
 package com.rudra.ispnetworktool.presentation.ipinfo
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,14 +9,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.rudra.ispnetworktool.presentation.dashboard.InfoRow
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,13 +37,20 @@ fun IpInfoScreen(viewModel: IpInfoViewModel = hiltViewModel()) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("IP Info") })
+            TopAppBar(
+                title = { Text("IP Info", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
@@ -47,9 +58,25 @@ fun IpInfoScreen(viewModel: IpInfoViewModel = hiltViewModel()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
                 state.ipInfo?.let { ipInfo ->
-                    InfoCard("Public IP Info", ipInfo.publicIp, ipInfo.isp, ipInfo.city, ipInfo.country)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    InfoCard("Local Network Info", ipInfo.localIp, ipInfo.gateway, ipInfo.dnsServers.joinToString())
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(8.dp, RoundedCornerShape(16.dp)),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            InfoRow("Public IP", ipInfo.publicIp)
+                            InfoRow("ISP", ipInfo.isp)
+                            InfoRow("City", ipInfo.city)
+                            InfoRow("Country", ipInfo.country)
+                            InfoRow("Local IP", ipInfo.localIp)
+                            InfoRow("Gateway", ipInfo.gateway)
+                            InfoRow("DNS Servers", ipInfo.dnsServers.joinToString())
+                        }
+                    }
                 }
             }
 
@@ -75,22 +102,6 @@ fun IpInfoScreen(viewModel: IpInfoViewModel = hiltViewModel()) {
                 }, modifier = Modifier.weight(1f)) {
                     Text("Share")
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun InfoCard(title: String, vararg details: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            details.forEach {
-                Text(it)
             }
         }
     }
