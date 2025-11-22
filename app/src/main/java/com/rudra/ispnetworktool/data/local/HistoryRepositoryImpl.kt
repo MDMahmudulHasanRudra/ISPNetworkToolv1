@@ -15,4 +15,20 @@ class HistoryRepositoryImpl @Inject constructor(
     override fun getAllLogs(): Flow<List<ToolLogEntity>> {
         return toolLogDao.getAllLogs()
     }
+
+    override suspend fun deleteById(id: Int) {
+        toolLogDao.deleteById(id)
+    }
+
+    override suspend fun clearAll() {
+        toolLogDao.clearAll()
+    }
+
+    override suspend fun getLogById(id: Int): ToolLogEntity? {
+        TODO("Not yet implemented")
+    }
+
+//    override suspend fun getLogById(id: Int): ToolLogEntity? {
+//        return toolLogDao.getLogById(id)
+//    }
 }

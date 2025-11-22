@@ -18,6 +18,7 @@ import com.rudra.ispnetworktool.presentation.dashboard.DashboardScreen
 import com.rudra.ispnetworktool.presentation.dns.DnsLookupScreen
 import com.rudra.ispnetworktool.presentation.history.HistoryScreen
 import com.rudra.ispnetworktool.presentation.ipinfo.IpInfoScreen
+import com.rudra.ispnetworktool.presentation.ip_validator.IpValidatorScreen
 import com.rudra.ispnetworktool.presentation.ping.PingScreen
 import com.rudra.ispnetworktool.presentation.portchecker.PortCheckerScreen
 import com.rudra.ispnetworktool.presentation.settings.SettingsScreen
@@ -32,6 +33,9 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Screen.Dashboard.route) {
             DashboardScreen(navController = navController)
         }
+        composable("ipvalidator") {  // Add this route
+            IpValidatorScreen()
+        }
         composable(Screen.Tools.route) {
             ToolsScreen(navController = navController)
         }
@@ -40,6 +44,9 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable(Screen.Settings.route) {
             SettingsScreen()
+        }
+        composable(Screen.IpValidator.route) {
+            IpValidatorScreen()
         }
         composable("ping") {
             PingScreen()
@@ -73,7 +80,7 @@ fun NavigationGraph(navController: NavHostController) {
 
 @Composable
 fun ToolsScreen(navController: NavHostController) {
-    val tools = listOf("Ping", "Traceroute", "DNS Lookup", "IP Info", "Subnet Calculator","NetworkCalculator" ,"Port Checker", "WHOIS Lookup")
+    val tools = listOf("Ping", "Traceroute", "DNS Lookup", "IP Info", "Subnet Calculator","NetworkCalculator" ,"Port Checker", "WHOIS Lookup", "IP Validator")
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         items(tools) { tool ->
             Text(

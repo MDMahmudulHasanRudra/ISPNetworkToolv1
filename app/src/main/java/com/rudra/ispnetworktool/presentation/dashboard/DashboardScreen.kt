@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Calculate
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Public
@@ -65,6 +66,7 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
         ToolItem("Port Checker", Icons.Outlined.Visibility, Color(0xFFE91E63)),
         ToolItem("WHOIS Lookup", Icons.Outlined.Public, Color(0xFF2196F3)),
         ToolItem("NetworkCalculator", Icons.Outlined.Route, Color(0xFF2196F3)),
+        ToolItem("IP Validator", Icons.Outlined.CheckCircle, Color(0xFF795548))
     )
 
     val filteredTools = tools.filter {

@@ -1,11 +1,7 @@
 package com.rudra.ispnetworktool.presentation.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Difference
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
@@ -17,4 +13,5 @@ sealed class Screen(
     object Tools : Screen("tools", "Tools", Icons.Filled.Difference) // Using Home icon for Tools as a placeholder
     object History : Screen("history", "History", Icons.Filled.History)
     object Settings : Screen("settings", "Settings", Icons.Filled.Settings)
+    object IpValidator : Screen("ip_validator", "IP Validator", Icons.Filled.CheckCircle)
 }
