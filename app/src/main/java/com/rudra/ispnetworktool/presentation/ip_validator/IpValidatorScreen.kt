@@ -1,15 +1,11 @@
 package com.rudra.ispnetworktool.presentation.ip_validator
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
@@ -20,8 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -34,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +38,7 @@ fun IpValidatorScreen(
 ) {
     val state = viewModel.state.value
     val scaffoldState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     // Collect events from ViewModel
     LaunchedEffect(key1 = true) {
@@ -59,13 +55,14 @@ fun IpValidatorScreen(
     }
 
     Scaffold(
-//        topBar = {
-//            PremiumTopAppBar(
-//                onClearClick = viewModel::clearResults,
-//                onShareClick = viewModel::shareResults,
-//                hasResults = state.isValid == true
-//            )
-//        },
+        topBar = {
+
+                   PremiumTopAppBar(
+                onClearClick = { scope.launch { viewModel.clearResults() } },
+                       onShareClick = { scope.launch { viewModel.shareResults() } },
+                       hasResults = state.isValid == true
+           )
+        },
         snackbarHost = { SnackbarHost(scaffoldState) },
         containerColor = Color.Transparent
     ) { paddingValues ->
@@ -116,13 +113,13 @@ fun IpValidatorScreen(
                         )
                     }
 
-//                    if (state.isValid != null || state.validationStatus == ValidationStatus.ERROR) {
-//                        ValidationResults(
-//                            state = state,
-//                            onRetryClick = viewModel::retryValidation,
-//                            modifier = Modifier.fillMaxWidth()
-//                        )
-//                    }
+                    if (state.isValid != null || state.validationStatus == ValidationStatus.ERROR) {
+                        ValidationResults(
+                           state = state,
+                            onRetryClick = { scope.launch { viewModel.retryValidation() } },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
                     if (state.isComplete) {
                         AdditionalInfoSection(

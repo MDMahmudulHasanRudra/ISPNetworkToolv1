@@ -16,8 +16,9 @@ data class IpValidatorScreenState(
 ) {
     val displayStatus: String
         get() = when {
-            isLoading -> "Validating..."
-            isValid == true -> "✓ Valid IP Address"
+            isLoading -> "Pinging..."
+            isValid == true && isPublic == true -> "✓ Public IP"
+            isValid == true && isPublic == false -> "✓ Private IP"
             isValid == false -> "✗ Invalid IP Address"
             else -> "Enter IP to validate"
         }
@@ -25,7 +26,8 @@ data class IpValidatorScreenState(
     val statusColor: Color
         get() = when {
             isLoading -> Color(0xFFFFA000) // Amber for loading
-            isValid == true -> Color(0xFF00C853) // Green for valid
+            isValid == true && isPublic == true -> Color(0xFF00C853) // Green for public
+            isValid == true && isPublic == false -> Color.DarkGray // Dark color for private
             isValid == false -> Color(0xFFDD2C00) // Red for invalid
             else -> Color(0xFF666666) // Gray for idle
         }
@@ -92,18 +94,18 @@ fun IpValidatorScreenState.getConnectionQuality(): ConnectionQuality {
     return when {
         isValid != true -> ConnectionQuality.UNKNOWN
         isPublic == true -> ConnectionQuality.EXCELLENT
+        isPublic == false -> ConnectionQuality.FAIR
         ipType == IpType.IPV6 -> ConnectionQuality.GOOD
         networkClass in listOf(NetworkClass.CLASS_A, NetworkClass.CLASS_B) -> ConnectionQuality.GOOD
-        else -> ConnectionQuality.FAIR
+        else -> ConnectionQuality.POOR
     }
 }
 
 fun IpValidatorScreenState.getSecurityLevel(): SecurityLevel {
     return when {
-        isValid == true -> SecurityLevel.UNKNOWN
-        isPublic == false -> SecurityLevel.HIGH
-        additionalInfo.specialPurpose == SpecialPurpose.PRIVATE -> SecurityLevel.HIGH
+        isValid != true -> SecurityLevel.UNKNOWN
         additionalInfo.specialPurpose == SpecialPurpose.LOOPBACK -> SecurityLevel.VERY_HIGH
+        isPublic == false -> SecurityLevel.HIGH
         else -> SecurityLevel.MEDIUM
     }
 }
@@ -170,35 +172,48 @@ object IpValidatorUtils {
     }
 
     fun isPrivateIp(ip: String): Boolean {
-        if (!validateIpv4(ip)) return false
-
-        return when {
-            ip.startsWith("10.") -> true
-            ip.startsWith("192.168.") -> true
-            ip.startsWith("172.") -> {
-                val secondOctet = ip.split('.')[1].toIntOrNull() ?: return false
-                secondOctet in 16..31
+        if (validateIpv4(ip)) {
+            return when {
+                ip.startsWith("10.") -> true
+                ip.startsWith("192.168.") -> true
+                ip.startsWith("172.") -> {
+                    val secondOctet = ip.split('.')[1].toIntOrNull() ?: return false
+                    secondOctet in 16..31
+                }
+                else -> false
             }
-            ip == "127.0.0.1" -> true
-            ip.startsWith("169.254.") -> true // Link-local
-            else -> false
+        } else if (validateIpv6(ip)) {
+            // Check for Unique Local Addresses (ULA)
+            val normalizedIp = ip.lowercase()
+            return normalizedIp.startsWith("fc") || normalizedIp.startsWith("fd")
         }
+        return false
     }
 
     fun getSpecialPurpose(ip: String): SpecialPurpose {
-        if (!validateIpv4(ip)) return SpecialPurpose.PUBLIC
-
-        return when {
-            ip.startsWith("127.") -> SpecialPurpose.LOOPBACK
-            ip.startsWith("169.254.") -> SpecialPurpose.LINK_LOCAL
-            ip.startsWith("224.") -> SpecialPurpose.MULTICAST
-            ip == "255.255.255.255" -> SpecialPurpose.BROADCAST
-            ip.startsWith("192.0.2.") || ip.startsWith("198.51.100.") || ip.startsWith("203.0.113.") ->
-                SpecialPurpose.DOCUMENTATION
-            ip.startsWith("198.18.") -> SpecialPurpose.BENCHMARK_TESTING
-            isPrivateIp(ip) -> SpecialPurpose.PRIVATE
-            else -> SpecialPurpose.PUBLIC
+        if (validateIpv4(ip)) {
+            return when {
+                ip.startsWith("127.") -> SpecialPurpose.LOOPBACK
+                ip.startsWith("169.254.") -> SpecialPurpose.LINK_LOCAL
+                ip.startsWith("224.") -> SpecialPurpose.MULTICAST
+                ip == "255.255.255.255" -> SpecialPurpose.BROADCAST
+                ip.startsWith("192.0.2.") || ip.startsWith("198.51.100.") || ip.startsWith("203.0.113.") ->
+                    SpecialPurpose.DOCUMENTATION
+                ip.startsWith("198.18.") -> SpecialPurpose.BENCHMARK_TESTING
+                isPrivateIp(ip) -> SpecialPurpose.PRIVATE
+                else -> SpecialPurpose.PUBLIC
+            }
+        } else if (validateIpv6(ip)) {
+            val normalizedIp = ip.lowercase()
+            return when {
+                normalizedIp == "::1" -> SpecialPurpose.LOOPBACK
+                normalizedIp.startsWith("fe80:") -> SpecialPurpose.LINK_LOCAL
+                normalizedIp.startsWith("ff") -> SpecialPurpose.MULTICAST
+                isPrivateIp(ip) -> SpecialPurpose.PRIVATE // for ULA fc00::/7
+                else -> SpecialPurpose.PUBLIC
+            }
         }
+        return SpecialPurpose.PUBLIC
     }
 
     fun calculateSubnetInfo(ip: String, cidr: Int = 24): IpAdditionalInfo {

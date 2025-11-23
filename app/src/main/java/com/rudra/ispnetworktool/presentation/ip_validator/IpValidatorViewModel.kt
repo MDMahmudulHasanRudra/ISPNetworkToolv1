@@ -6,12 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rudra.ispnetworktool.domain.use_case.GetIpAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
 import java.net.InetAddress
 import javax.inject.Inject
 
@@ -61,17 +58,16 @@ class IpValidatorViewModel @Inject constructor(
 
         validationJob?.cancel()
         validationJob = viewModelScope.launch {
+            _state.value = _state.value.copy(
+                isLoading = true,
+                validationStatus = ValidationStatus.VALIDATING,
+                errorMessage = null
+            )
             try {
-                _state.value = _state.value.copy(
-                    isLoading = true,
-                    validationStatus = ValidationStatus.VALIDATING,
-                    errorMessage = null
-                )
+                val isIpv4 = IpValidatorUtils.validateIpv4(ipAddress)
+                val isIpv6 = IpValidatorUtils.validateIpv6(ipAddress)
 
-                val isValidFormat = IpValidatorUtils.validateIpv4(ipAddress) ||
-                        IpValidatorUtils.validateIpv6(ipAddress)
-
-                if (!isValidFormat) {
+                if (!isIpv4 && !isIpv6) {
                     _state.value = _state.value.copy(
                         isLoading = false,
                         isValid = false,
@@ -82,30 +78,26 @@ class IpValidatorViewModel @Inject constructor(
                     return@launch
                 }
 
-                val inetAddress = InetAddress.getByName(ipAddress)
-                val isReachable = inetAddress.isReachable(3000)
+                val ipType = if (isIpv4) IpType.IPV4 else IpType.IPV6
 
-                val ipType = when {
-                    IpValidatorUtils.validateIpv4(ipAddress) -> IpType.IPV4
-                    IpValidatorUtils.validateIpv6(ipAddress) -> IpType.IPV6
-                    else -> IpType.UNKNOWN
+                val isPingable = withContext(Dispatchers.IO) {
+                    try {
+                        InetAddress.getByName(ipAddress).isReachable(5000) // 5s timeout
+                    } catch (e: Exception) {
+                        false
+                    }
                 }
 
-                val isPublic = !inetAddress.isSiteLocalAddress &&
-                        !IpValidatorUtils.isPrivateIp(ipAddress)
+                val isPublic = isPingable
+                val specialPurpose = IpValidatorUtils.getSpecialPurpose(ipAddress)
+                val networkClass = if (ipType == IpType.IPV4) IpValidatorUtils.getNetworkClass(ipAddress) else null
 
-                val networkClass = if (ipType == IpType.IPV4) {
-                    IpValidatorUtils.getNetworkClass(ipAddress)
-                } else {
-                    null
-                }
-
-                val additionalInfo = if (ipType == IpType.IPV4) {
+                val additionalInfo = (if (ipType == IpType.IPV4) {
                     IpValidatorUtils.calculateSubnetInfo(ipAddress)
                 } else {
                     IpAdditionalInfo()
-                }.copy(
-                    specialPurpose = IpValidatorUtils.getSpecialPurpose(ipAddress),
+                }).copy(
+                    specialPurpose = specialPurpose,
                     isp = if (isPublic) "Unknown ISP" else "Local Network"
                 )
 
@@ -121,23 +113,18 @@ class IpValidatorViewModel @Inject constructor(
                     errorMessage = null
                 )
 
-                _eventFlow.emit(UiEvent.ShowMessage("✓ IP address validated successfully"))
+                val message = if (isPublic) "✓ Public IP detected" else "✓ Private IP detected"
+                _eventFlow.emit(UiEvent.ShowMessage(message))
 
-                if (isValidFormat) {
-                    saveToHistory(ipAddress, isPublic, ipType, networkClass)
-                }
+                saveToHistory(ipAddress, isPublic, ipType, networkClass)
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                 e.printStackTrace()
                 _state.value = _state.value.copy(
                     isLoading = false,
                     isValid = false,
                     validationStatus = ValidationStatus.ERROR,
-                    errorMessage = when (e) {
-                        is java.net.UnknownHostException -> "Unknown host: ${e.message}"
-                        is SecurityException -> "Network access denied"
-                        else -> "Validation failed: ${e.message}"
-                    },
+                    errorMessage = "Validation failed: ${e.message}",
                     lastUpdated = System.currentTimeMillis()
                 )
                 _eventFlow.emit(UiEvent.ShowMessage("✗ Validation failed: ${e.message}"))
