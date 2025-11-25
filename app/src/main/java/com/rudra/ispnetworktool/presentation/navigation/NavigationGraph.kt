@@ -39,12 +39,6 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Screen.Dashboard.route) {
             DashboardScreen(navController = navController)
         }
-        composable("ipvalidator") {  // Add this route
-            IpValidatorScreen()
-        }
-        composable(Screen.Tools.route) {
-            ToolsScreen(navController = navController)
-        }
         composable(Screen.History.route) {
             HistoryScreen()
         }
@@ -54,61 +48,61 @@ fun NavigationGraph(navController: NavHostController) {
         composable(Screen.IpValidator.route) {
             IpValidatorScreen()
         }
-        composable("ping") {
+        composable(Screen.Ping.route) {
             PingScreen()
         }
-        composable("traceroute") {
+        composable(Screen.Traceroute.route) {
             TracerouteScreen()
         }
-        composable("dnslookup") {
+        composable(Screen.DnsLookup.route) {
             DnsLookupScreen()
         }
-        composable("ipinfo") {
+        composable(Screen.IpInfo.route) {
             IpInfoScreen()
         }
-        composable("subnetcalculator") {
+        composable(Screen.SubnetCalculator.route) {
             SubnetCalculatorScreen()
         }
-        composable("portchecker") {
+        composable(Screen.PortChecker.route) {
             PortCheckerScreen()
         }
-        composable("whoislookup") {
+        composable(Screen.WhoisLookup.route) {
             WhoisScreen()
         }
-        composable("networkcalculator") {
+        composable(Screen.NetworkCalculator.route) {
             NetworkCalculatorScreen()
         }
-        composable("cidrvosualizer") {
+        composable(Screen.CidrVisualizer.route) {
             CidrVisualizerScreen()
         }
-        composable("ipplanningchart") {
+        composable(Screen.IpPlanningChart.route) {
             IpPlanningChartScreen()
         }
-        composable("vlanplanner") {
+        composable(Screen.VlanPlanner.route) {
             VlanPlannerScreen()
         }
-        composable("tcpudpportreference") {
+        composable(Screen.TcpUdpPortReference.route) {
             TcpUdpPortReferenceScreen()
         }
-        composable("osi&tcpipmodels") {
+        composable(Screen.OsiTcpIpModels.route) {
             OsiTcpIpModelsScreen()
         }
-        composable("basicroutersetup") {
+        composable(Screen.BasicRouterSetup.route) {
             BasicRouterSetupScreen()
         }
-        composable("pppoeserversetup") {
+        composable(Screen.PppoeServerSetup.route) {
             PppoeServerSetupScreen()
         }
-        composable("hotspotsetup") {
+        composable(Screen.HotspotSetup.route) {
             HotspotSetupScreen()
         }
-        composable("loadbalancingpresets") {
+        composable(Screen.LoadBalancingPresets.route) {
             LoadBalancingPresetsScreen()
         }
-        composable("firewallrulegenerator") {
+        composable(Screen.FirewallRuleGenerator.route) {
             FirewallRuleGeneratorScreen()
         }
-        composable("natruletemplates") {
+        composable(Screen.NatRuleTemplates.route) {
             NatRuleTemplatesScreen()
         }
     }
@@ -119,9 +113,4 @@ fun ComingSoonScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Coming Soon!")
     }
-}
-
-@Composable
-fun ToolsScreen(navController: NavHostController) {
-    // This screen is no longer needed as the tools are on the dashboard
 }
