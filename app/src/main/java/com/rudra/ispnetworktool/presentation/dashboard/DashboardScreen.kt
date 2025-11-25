@@ -17,13 +17,22 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -66,7 +75,18 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
         ToolItem("Port Checker", Icons.Outlined.Visibility, Color(0xFFE91E63)),
         ToolItem("WHOIS Lookup", Icons.Outlined.Public, Color(0xFF2196F3)),
         ToolItem("NetworkCalculator", Icons.Outlined.Route, Color(0xFF2196F3)),
-        ToolItem("IP Validator", Icons.Outlined.CheckCircle, Color(0xFF795548))
+        ToolItem("IP Validator", Icons.Outlined.CheckCircle, Color(0xFF795548)),
+        ToolItem("CIDR Visualizer", Icons.Outlined.Insights, Color(0xFF009688)),
+        ToolItem("IP Planning Chart", Icons.Outlined.BarChart, Color(0xFFCDDC39)),
+        ToolItem("VLAN Planner", Icons.Outlined.Layers, Color(0xFF673AB7)),
+        ToolItem("TCP/UDP Port Reference", Icons.Outlined.Code, Color(0xFF3F51B5)),
+        ToolItem("OSI & TCP/IP Models", Icons.Outlined.DataObject, Color(0xFF03A9F4)),
+        ToolItem("Basic Router Setup", Icons.Outlined.Settings, Color(0xFF4CAF50)),
+        ToolItem("PPPoE Server Setup", Icons.Outlined.Build, Color(0xFF8BC34A)),
+        ToolItem("Hotspot Setup", Icons.Outlined.Info, Color(0xFFFFC107)),
+        ToolItem("Load-Balancing Presets", Icons.Outlined.SwapHoriz, Color(0xFF00BCD4)),
+        ToolItem("Firewall Rule Generator", Icons.Outlined.Lock, Color(0xFFF44336)),
+        ToolItem("NAT Rule Templates", Icons.Outlined.Dns, Color(0xFFE91E63))
     )
 
     val filteredTools = tools.filter {
