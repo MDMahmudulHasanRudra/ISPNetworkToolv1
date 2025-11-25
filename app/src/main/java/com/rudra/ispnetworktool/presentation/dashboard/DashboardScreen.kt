@@ -59,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.rudra.ispnetworktool.presentation.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,26 +68,26 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
     var searchQuery by remember { mutableStateOf("") }
 
     val tools = listOf(
-        ToolItem("Ping", Icons.Outlined.Security, Color(0xFF4CAF50)),
-        ToolItem("Traceroute", Icons.Outlined.Route, Color(0xFF2196F3)),
-        ToolItem("DNS Lookup", Icons.Outlined.Dns, Color(0xFF9C27B0)),
-        ToolItem("IP Info", Icons.Outlined.Info, Color(0xFFFF9800)),
-        ToolItem("Subnet Calculator", Icons.Outlined.Calculate, Color(0xFF607D8B)),
-        ToolItem("Port Checker", Icons.Outlined.Visibility, Color(0xFFE91E63)),
-        ToolItem("WHOIS Lookup", Icons.Outlined.Public, Color(0xFF2196F3)),
-        ToolItem("NetworkCalculator", Icons.Outlined.Route, Color(0xFF2196F3)),
-        ToolItem("IP Validator", Icons.Outlined.CheckCircle, Color(0xFF795548)),
-        ToolItem("CIDR Visualizer", Icons.Outlined.Insights, Color(0xFF009688)),
-        ToolItem("IP Planning Chart", Icons.Outlined.BarChart, Color(0xFFCDDC39)),
-        ToolItem("VLAN Planner", Icons.Outlined.Layers, Color(0xFF673AB7)),
-        ToolItem("TCP/UDP Port Reference", Icons.Outlined.Code, Color(0xFF3F51B5)),
-        ToolItem("OSI & TCP/IP Models", Icons.Outlined.DataObject, Color(0xFF03A9F4)),
-        ToolItem("Basic Router Setup", Icons.Outlined.Settings, Color(0xFF4CAF50)),
-        ToolItem("PPPoE Server Setup", Icons.Outlined.Build, Color(0xFF8BC34A)),
-        ToolItem("Hotspot Setup", Icons.Outlined.Info, Color(0xFFFFC107)),
-        ToolItem("Load-Balancing Presets", Icons.Outlined.SwapHoriz, Color(0xFF00BCD4)),
-        ToolItem("Firewall Rule Generator", Icons.Outlined.Lock, Color(0xFFF44336)),
-        ToolItem("NAT Rule Templates", Icons.Outlined.Dns, Color(0xFFE91E63))
+        ToolItem("Ping", Icons.Outlined.Security, Screen.Ping.route, Color(0xFF4CAF50)),
+        ToolItem("Traceroute", Icons.Outlined.Route, Screen.Traceroute.route, Color(0xFF2196F3)),
+        ToolItem("DNS Lookup", Icons.Outlined.Dns, Screen.DnsLookup.route, Color(0xFF9C27B0)),
+        ToolItem("IP Info", Icons.Outlined.Info, Screen.IpInfo.route, Color(0xFFFF9800)),
+        ToolItem("Subnet Calculator", Icons.Outlined.Calculate, Screen.SubnetCalculator.route, Color(0xFF607D8B)),
+        ToolItem("Port Checker", Icons.Outlined.Visibility, Screen.PortChecker.route, Color(0xFFE91E63)),
+        ToolItem("WHOIS Lookup", Icons.Outlined.Public, Screen.WhoisLookup.route, Color(0xFF2196F3)),
+        ToolItem("NetworkCalculator", Icons.Outlined.Route, Screen.NetworkCalculator.route, Color(0xFF2196F3)),
+        ToolItem("IP Validator", Icons.Outlined.CheckCircle, Screen.IpValidator.route, Color(0xFF795548)),
+        ToolItem("CIDR Visualizer", Icons.Outlined.Insights, Screen.CidrVisualizer.route, Color(0xFF009688)),
+        ToolItem("IP Planning Chart", Icons.Outlined.BarChart, Screen.IpPlanningChart.route, Color(0xFFCDDC39)),
+        ToolItem("VLAN Planner", Icons.Outlined.Layers, Screen.VlanPlanner.route, Color(0xFF673AB7)),
+        ToolItem("TCP/UDP Port Reference", Icons.Outlined.Code, Screen.TcpUdpPortReference.route, Color(0xFF3F51B5)),
+        ToolItem("OSI & TCP/IP Models", Icons.Outlined.DataObject, Screen.OsiTcpIpModels.route, Color(0xFF03A9F4)),
+        ToolItem("Basic Router Setup", Icons.Outlined.Settings, Screen.BasicRouterSetup.route, Color(0xFF4CAF50)),
+        ToolItem("PPPoE Server Setup", Icons.Outlined.Build, Screen.PppoeServerSetup.route, Color(0xFF8BC34A)),
+        ToolItem("Hotspot Setup", Icons.Outlined.Info, Screen.HotspotSetup.route, Color(0xFFFFC107)),
+        ToolItem("Load-Balancing Presets", Icons.Outlined.SwapHoriz, Screen.LoadBalancingPresets.route, Color(0xFF00BCD4)),
+        ToolItem("Firewall Rule Generator", Icons.Outlined.Lock, Screen.FirewallRuleGenerator.route, Color(0xFFF44336)),
+        ToolItem("NAT Rule Templates", Icons.Outlined.Dns, Screen.NatRuleTemplates.route, Color(0xFFE91E63))
     )
 
     val filteredTools = tools.filter {
@@ -179,9 +180,7 @@ fun DashboardScreen(navController: NavController, viewModel: DashboardViewModel 
                 items(filteredTools) { tool ->
                     FloatingToolTile(
                         tool = tool,
-                        onClick = {
-                            navController.navigate(tool.name.replace(" ", "").lowercase())
-                        }
+                        onClick = { navController.navigate(tool.route) }
                     )
                 }
             }
