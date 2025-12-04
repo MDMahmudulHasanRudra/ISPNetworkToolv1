@@ -6,4 +6,7 @@ import kotlinx.coroutines.flow.Flow
 interface HistoryRepository {
     suspend fun saveLog(log: ToolLogEntity)
     fun getAllLogs(): Flow<List<ToolLogEntity>>
+    suspend fun deleteById(id: Int)
+    suspend fun clearAll()
+    suspend fun getLogById(id: Int): ToolLogEntity?
 }

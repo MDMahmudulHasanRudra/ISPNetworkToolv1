@@ -1,41 +1,64 @@
 package com.rudra.ispnetworktool.presentation.traceroute
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.rudra.ispnetworktool.data.models.TracerouteResult
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TracerouteScreen(viewModel: TracerouteViewModel = hiltViewModel()) {
+
     var host by remember { mutableStateOf("google.com") }
     val state by viewModel.uiState.collectAsState()
+
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(key1 = true) {
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Auto-scroll when new hop appears
+    LaunchedEffect(state.results.size) {
+        if (state.results.isNotEmpty()) {
+            coroutineScope.launch {
+                lazyListState.animateScrollToItem(state.results.size - 1)
+            }
+        }
+    }
+
+    // Show errors
+    LaunchedEffect(Unit) {
         viewModel.errorFlow.collectLatest { error ->
-            snackbarHostState.showSnackbar(message = error)
+            snackbarHostState.showSnackbar(error)
         }
     }
 
@@ -51,6 +74,7 @@ fun TracerouteScreen(viewModel: TracerouteViewModel = hiltViewModel()) {
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -58,61 +82,143 @@ fun TracerouteScreen(viewModel: TracerouteViewModel = hiltViewModel()) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+
+            // Host input + buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 OutlinedTextField(
                     value = host,
                     onValueChange = { host = it },
                     label = { Text("Host") },
                     modifier = Modifier.weight(1f)
                 )
-                Button(onClick = { viewModel.startTraceroute(host) }, enabled = !state.isLoading) {
-                    Text("Trace")
+
+                IconButton(
+                    onClick = { viewModel.startTraceroute(host) },
+                    enabled = !state.isLoading
+                ) {
+                    Icon(Icons.Filled.PlayArrow, contentDescription = "Start")
                 }
-                Button(onClick = { viewModel.stopTraceroute() }, enabled = state.isLoading) {
-                    Text("Stop")
+
+                IconButton(
+                    onClick = { viewModel.stopTraceroute() },
+                    enabled = state.isLoading
+                ) {
+                    Icon(Icons.Filled.Stop, contentDescription = "Stop")
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { viewModel.saveResult() }, modifier = Modifier.weight(1f)) {
+            // Save / Share / Copy
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                OutlinedButton(
+                    onClick = { viewModel.saveResult() }
+                ) {
+                    Icon(Icons.Filled.Save, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
                     Text("Save")
                 }
-                Button(onClick = { 
-                    viewModel.shareResult { text ->
-                        val sendIntent: Intent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            putExtra(Intent.EXTRA_TEXT, text)
-                            type = "text/plain"
+
+                OutlinedButton(
+                    onClick = {
+                        viewModel.shareResult { text ->
+                            val sendIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, text)
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, "Share via"))
                         }
-                        val shareIntent = Intent.createChooser(sendIntent, null)
-                        context.startActivity(shareIntent)
                     }
-                }, modifier = Modifier.weight(1f)) {
+                ) {
+                    Icon(Icons.Filled.Share, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
                     Text("Share")
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        viewModel.shareResult { text ->
+                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(text))
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar("Copied to clipboard")
+                            }
+                        }
+                    }
+                ) {
+                    Icon(Icons.Filled.ContentCopy, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("Copy")
                 }
             }
 
+            // Loading Indicator
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally))
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
 
-            LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
-                items(state.results) { result ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).shadow(2.dp, RoundedCornerShape(12.dp)),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            // Traceroute results with animation
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 12.dp),
+                state = lazyListState
+            ) {
+
+                itemsIndexed(state.results) { index, result ->
+
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn()
                     ) {
-                        when (result) {
-                            is TracerouteResult.Hop -> Text("${result.hop}. ${result.ip} - ${result.rtt}ms", modifier = Modifier.padding(16.dp))
-                            is TracerouteResult.Failure -> Text("Error: ${result.error}", modifier = Modifier.padding(16.dp))
-                            else -> {}
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                                .shadow(2.dp, RoundedCornerShape(12.dp)),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(Modifier.padding(16.dp)) {
+
+                                when (result) {
+                                    is TracerouteResult.Hop -> {
+                                        Text(
+                                            text = "${result.hop}. ${result.ip}  —  ${result.rtt} ms",
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+
+                                    is TracerouteResult.Failure -> {
+                                        Text(
+                                            text = "Error: ${result.error}",
+                                            color = MaterialTheme.colorScheme.error,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+
+                                    else -> Unit
+                                }
+                            }
                         }
                     }
                 }

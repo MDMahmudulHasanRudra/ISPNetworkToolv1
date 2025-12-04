@@ -14,4 +14,10 @@ interface ToolLogDao {
 
     @Query("SELECT * FROM tool_logs ORDER BY timestamp DESC")
     fun getAllLogs(): Flow<List<ToolLogEntity>>
+
+    @Query("DELETE FROM tool_logs WHERE id = :id")
+    suspend fun deleteById(id: Int)
+
+    @Query("DELETE FROM tool_logs")
+    suspend fun clearAll()
 }

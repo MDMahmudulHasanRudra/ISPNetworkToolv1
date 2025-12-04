@@ -4,6 +4,7 @@ import android.content.Context
 import com.rudra.ispnetworktool.data.local.*
 import com.rudra.ispnetworktool.data.remote.DnsRepositoryImpl
 import com.rudra.ispnetworktool.data.remote.IpInfoRepositoryImpl
+import com.rudra.ispnetworktool.data.remote.IpRepositoryImpl
 import com.rudra.ispnetworktool.domain.repository.*
 import dagger.Module
 import dagger.Provides
@@ -57,5 +58,11 @@ object RepositoryModule {
     @Singleton
     fun provideHistoryRepository(dao: ToolLogDao): HistoryRepository {
         return HistoryRepositoryImpl(dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideIpRepository(): IpRepository {
+        return IpRepositoryImpl()
     }
 }
