@@ -10,7 +10,8 @@ sealed class Screen(
     val icon: ImageVector
 ) {
     object Dashboard : Screen("dashboard", "Dashboard", Icons.Filled.Dashboard)
-    object Tools : Screen("tools", "Tools", Icons.Filled.Difference) // Using Home icon for Tools as a placeholder
+    object Explore : Screen("explore", "Explore", Icons.Filled.Explore)
+    object Tools : Screen("tools", "Tools", Icons.Filled.Difference)
     object History : Screen("history", "History", Icons.Filled.History)
     object Settings : Screen("settings", "Settings", Icons.Filled.Settings)
     object IpValidator : Screen("ip_validator", "IP Validator", Icons.Filled.CheckCircle)
@@ -33,4 +34,6 @@ sealed class Screen(
     object LoadBalancingPresets : Screen("loadbalancingpresets", "Load Balancing Presets", Icons.Filled.Balance)
     object FirewallRuleGenerator : Screen("firewallrulegenerator", "Firewall Rule Generator", Icons.Filled.Security)
     object NatRuleTemplates : Screen("natruletemplates", "NAT Rule Templates", Icons.Filled.AccountTree)
+    object BandwidthCalculator : Screen("bandwidth_calculator", "Bandwidth Calculator", Icons.Filled.Speed)
+    object BdixMonitor : Screen("bdix_monitor", "BDIX Monitor", Icons.Filled.Monitor)
 }

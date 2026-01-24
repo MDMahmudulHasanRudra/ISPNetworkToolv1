@@ -9,10 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.rudra.ispnetworktool.presentation.bandwidth_calculator.BandwidthCalculatorScreen
+import com.rudra.ispnetworktool.presentation.bdix.BDIXDashboardScreen
 import com.rudra.ispnetworktool.presentation.basic_router_setup.BasicRouterSetupScreen
 import com.rudra.ispnetworktool.presentation.cidr_visualizer.CidrVisualizerScreen
 import com.rudra.ispnetworktool.presentation.dashboard.DashboardScreen
 import com.rudra.ispnetworktool.presentation.dns.DnsLookupScreen
+import com.rudra.ispnetworktool.presentation.explore.ExploreScreen
 import com.rudra.ispnetworktool.presentation.firewall_rule_generator.FirewallRuleGeneratorScreen
 import com.rudra.ispnetworktool.presentation.history.HistoryScreen
 import com.rudra.ispnetworktool.presentation.hotspot_setup.HotspotSetupScreen
@@ -38,6 +41,9 @@ fun NavigationGraph(navController: NavHostController) {
     NavHost(navController, startDestination = Screen.Dashboard.route) {
         composable(Screen.Dashboard.route) {
             DashboardScreen(navController = navController)
+        }
+        composable(Screen.Explore.route) {
+            ExploreScreen(navController = navController)
         }
         composable(Screen.History.route) {
             HistoryScreen()
@@ -104,6 +110,12 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable(Screen.NatRuleTemplates.route) {
             NatRuleTemplatesScreen()
+        }
+        composable(Screen.BandwidthCalculator.route) {
+            BandwidthCalculatorScreen()
+        }
+        composable(Screen.BdixMonitor.route) {
+            BDIXDashboardScreen(navController = navController)
         }
     }
 }

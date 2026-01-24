@@ -5,6 +5,7 @@ import com.rudra.ispnetworktool.data.local.*
 import com.rudra.ispnetworktool.data.remote.DnsRepositoryImpl
 import com.rudra.ispnetworktool.data.remote.IpInfoRepositoryImpl
 import com.rudra.ispnetworktool.data.remote.IpRepositoryImpl
+import com.rudra.ispnetworktool.data.repository.BDIXRepositoryImpl
 import com.rudra.ispnetworktool.domain.repository.*
 import dagger.Module
 import dagger.Provides
@@ -64,5 +65,11 @@ object RepositoryModule {
     @Singleton
     fun provideIpRepository(): IpRepository {
         return IpRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBDIXRepository(pingRepository: PingRepository): BDIXRepositoryImpl {
+        return BDIXRepositoryImpl(pingRepository)
     }
 }
