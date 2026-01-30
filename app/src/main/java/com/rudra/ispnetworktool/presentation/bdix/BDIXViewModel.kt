@@ -18,6 +18,9 @@ import javax.inject.Inject
 
 data class BDIXUIState(
     val nodes: List<BDIXNode> = emptyList(),
+    val filteredNodes: List<BDIXNode> = emptyList(),
+    val searchQuery: String = "",
+    val selectedCategory: String = "All",
     val pingResults: Map<String, BDIXPingResult> = emptyMap(),
     val healthMetrics: Map<String, HealthMetrics> = emptyMap(),
     val isLoading: Boolean = false,
@@ -32,28 +35,66 @@ class BDIXViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(BDIXUIState())
     val uiState: StateFlow<BDIXUIState> = _uiState.asStateFlow()
 
+    private var allNodes: List<BDIXNode> = emptyList()
+
     init {
         loadInitialData()
     }
 
     private fun loadInitialData() {
-        _uiState.update { it.copy(nodes = repository.bdixNodes, isLoading = false) }
+        allNodes = repository.bdixNodes
+        _uiState.update { 
+            it.copy(
+                nodes = allNodes, 
+                filteredNodes = allNodes,
+                isLoading = false 
+            ) 
+        }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+        applyFilters()
+    }
+
+    fun onCategorySelect(category: String) {
+        _uiState.update { it.copy(selectedCategory = category) }
+        applyFilters()
+    }
+
+    private fun applyFilters() {
+        val query = _uiState.value.searchQuery.lowercase()
+        val category = _uiState.value.selectedCategory
+
+        val filtered = allNodes.filter { node ->
+            val matchesQuery = node.name.lowercase().contains(query) || 
+                             node.ipAddress.contains(query) || 
+                             node.location.lowercase().contains(query)
+            
+            val matchesCategory = category == "All" || node.category == category
+            
+            matchesQuery && matchesCategory
+        }
+
+        _uiState.update { it.copy(filteredNodes = filtered) }
     }
 
     fun pingAllNodes() = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
-        val results = mutableMapOf<String, BDIXPingResult>()
-        val updatedNodes = _uiState.value.nodes.toMutableList()
-
-        _uiState.value.nodes.forEachIndexed { index, node ->
+        val currentNodes = _uiState.value.filteredNodes
+        val results = _uiState.value.pingResults.toMutableMap()
+        
+        currentNodes.forEach { node ->
             val result = repository.pingNode(node.id)
             results[node.id] = result
             
-            val status = determineNodeStatus(result)
-            updatedNodes[index] = node.copy(status = status)
+            // Update node status in allNodes too to keep it consistent
+            allNodes = allNodes.map { n ->
+                if (n.id == node.id) n.copy(status = determineNodeStatus(result)) else n
+            }
             
-            // Update state incrementally for better UX
-            _uiState.update { it.copy(pingResults = results.toMap(), nodes = updatedNodes.toList()) }
+            _uiState.update { it.copy(pingResults = results.toMap()) }
+            applyFilters() // Refresh filtered list with new statuses
         }
         _uiState.update { it.copy(isLoading = false) }
     }
@@ -63,13 +104,14 @@ class BDIXViewModel @Inject constructor(
         val results = _uiState.value.pingResults.toMutableMap()
         results[nodeId] = result
         
-        val updatedNodes = _uiState.value.nodes.map { node ->
+        allNodes = allNodes.map { node ->
             if (node.id == nodeId) {
                 node.copy(status = determineNodeStatus(result))
             } else node
         }
         
-        _uiState.update { it.copy(pingResults = results, nodes = updatedNodes) }
+        _uiState.update { it.copy(pingResults = results) }
+        applyFilters()
     }
 
     private fun determineNodeStatus(pingResult: BDIXPingResult): NodeStatus {
@@ -78,5 +120,9 @@ class BDIXViewModel @Inject constructor(
             pingResult.packetLoss > 5 || pingResult.latencyMs > 100 -> NodeStatus.DEGRADED
             else -> NodeStatus.HEALTHY
         }
+    }
+    
+    fun getCategories(): List<String> {
+        return listOf("All") + allNodes.map { it.category }.distinct().sorted()
     }
 }
