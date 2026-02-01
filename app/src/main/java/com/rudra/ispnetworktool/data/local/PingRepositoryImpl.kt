@@ -14,31 +14,30 @@ class PingRepositoryImpl : PingRepository {
 
     private var process: Process? = null
 
-    // Test: Should emit InProgress, then one or more Success, and finally Finished.
-    // Test: Should handle unknown host correctly, emitting Failure.
-    // Test: Should handle IOExceptions and emit Failure.
     override fun ping(host: String, count: Int): Flow<PingResult> = flow {
         emit(PingResult.InProgress)
         try {
-            val command = listOf("ping", "-c", count.toString(), host)
+            // Reordered command: options should generally come before the host
+            val command = mutableListOf("ping")
+            if (count < Int.MAX_VALUE) {
+                command.add("-c")
+                command.add(count.toString())
+            }
+            command.add(host)
+            
             val processBuilder = ProcessBuilder(command)
+            processBuilder.redirectErrorStream(true)
             process = processBuilder.start()
 
             val reader = BufferedReader(InputStreamReader(process?.inputStream))
             var line: String?
             while (reader.readLine().also { line = it } != null) {
-                val rtt = parsePingOutput(line)
-                if (rtt != null) {
-                    emit(PingResult.Success(rtt))
-                } else if (line!!.contains("unknown host") || line!!.contains("not found")) {
-                    emit(PingResult.Failure("Unknown host: $host"))
-                    break
+                if (line!!.isNotBlank()) {
+                    val rtt = parsePingOutput(line)
+                    emit(PingResult.Success(line!!, rtt))
                 }
             }
             val exitCode = process?.waitFor()
-            if (exitCode != 0) {
-                // Handle other errors based on exit code if needed
-            }
         } catch (e: IOException) {
             emit(PingResult.Failure(e.message ?: "An error occurred"))
         } finally {
@@ -47,15 +46,11 @@ class PingRepositoryImpl : PingRepository {
         }
     }.flowOn(Dispatchers.IO)
 
-    // Test: Should destroy the process.
     override fun stopPing() {
         process?.destroy()
         process = null
     }
 
-    // Test: Should parse valid ping output correctly.
-    // Test: Should return null for invalid or null input.
-    // Test: Should handle different formats of ping output from various Android versions.
     private fun parsePingOutput(line: String?): Float? {
         if (line == null || !line.contains("time=")) return null
         return try {
