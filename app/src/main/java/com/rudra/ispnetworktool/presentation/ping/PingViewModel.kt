@@ -1,6 +1,5 @@
 package com.rudra.ispnetworktool.presentation.ping
 
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rudra.ispnetworktool.data.local.ToolLogEntity
@@ -29,21 +28,57 @@ class PingViewModel @Inject constructor(
     private val _errorFlow = MutableSharedFlow<String>()
     val errorFlow = _errorFlow.asSharedFlow()
 
-    private var host: String? = null
+    private var currentHost: String? = null
+
+    fun processCommand(input: String) {
+        val trimmedInput = input.trim()
+        if (trimmedInput.isEmpty()) return
+
+        // Command parsing: handles "-t", "/t", "-T", "/T"
+        val parts = trimmedInput.split("\\s+".toRegex())
+        val host = parts.find { !it.startsWith("-") && !it.startsWith("/") } ?: ""
+        val isContinuous = parts.any { it.equals("-t", true) || it.equals("/t", true) }
+        
+        if (host.isNotEmpty()) {
+            startPing(host, if (isContinuous) Int.MAX_VALUE else 4)
+        } else if (trimmedInput.isNotEmpty()) {
+            // If no clear host found, try the whole input if it doesn't look like just options
+            startPing(trimmedInput, 4)
+        }
+    }
 
     fun startPing(host: String, count: Int) {
-        this.host = host
-        _uiState.value = PingScreenState(isLoading = true)
+        this.currentHost = host
+        // Add a header line for the start of the ping
+        val initialResults = listOf(PingResult.Info("Pinging $host with 32 bytes of data:"))
+        _uiState.value = PingScreenState(isLoading = true, results = initialResults)
+        
         pingRepository.ping(host, count)
             .onEach { result ->
-                val currentResults = _uiState.value.results.toMutableList()
+                val currentState = _uiState.value
+                val currentResults = currentState.results.toMutableList()
+                
                 when (result) {
-                    is PingResult.Success -> currentResults.add(result)
-                    is PingResult.Failure -> _errorFlow.emit(result.error)
-                    is PingResult.InProgress -> {}
-                    is PingResult.Finished -> _uiState.value = _uiState.value.copy(isLoading = false)
+                    is PingResult.Success -> {
+                        currentResults.add(result)
+                        _uiState.value = currentState.copy(results = currentResults)
+                    }
+                    is PingResult.Info -> {
+                        currentResults.add(result)
+                        _uiState.value = currentState.copy(results = currentResults)
+                    }
+                    is PingResult.Failure -> {
+                        currentResults.add(result)
+                        _uiState.value = currentState.copy(results = currentResults, isLoading = false)
+                        _errorFlow.emit(result.error)
+                    }
+                    is PingResult.InProgress -> {
+                        _uiState.value = currentState.copy(isLoading = true)
+                    }
+                    is PingResult.Finished -> {
+                        _uiState.value = currentState.copy(isLoading = false)
+                    }
                 }
-                _uiState.value = _uiState.value.copy(results = currentResults)
             }
             .launchIn(viewModelScope)
     }
@@ -57,7 +92,7 @@ class PingViewModel @Inject constructor(
         viewModelScope.launch {
             val log = ToolLogEntity(
                 toolType = "Ping",
-                target = host ?: "",
+                target = currentHost ?: "Unknown",
                 timestamp = System.currentTimeMillis(),
                 summary = "${_uiState.value.results.size} pings",
                 resultJson = ""
@@ -69,11 +104,12 @@ class PingViewModel @Inject constructor(
 
     fun shareResult(shareText: (String) -> Unit) {
         val results = _uiState.value.results
-        val text = "Ping results for $host:\n" +
+        val text = "Ping results for $currentHost:\n" +
                 results.joinToString("\n") { result ->
                     when (result) {
-                        is PingResult.Success -> "Reply from $host: time=${result.rtt}ms"
-                        is PingResult.Failure -> "Request timed out."
+                        is PingResult.Success -> result.fullLine
+                        is PingResult.Failure -> "Request timed out: ${result.error}"
+                        is PingResult.Info -> result.message
                         else -> ""
                     }
                 }

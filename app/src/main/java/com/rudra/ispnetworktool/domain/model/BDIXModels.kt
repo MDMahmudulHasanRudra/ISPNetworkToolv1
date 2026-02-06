@@ -9,6 +9,7 @@ data class BDIXNode(
     val longitude: Double,
     val connectedISPs: Int,
     val capacity: String,
+    val category: String,
     val status: NodeStatus = NodeStatus.UNKNOWN
 )
 
