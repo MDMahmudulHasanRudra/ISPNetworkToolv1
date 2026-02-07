@@ -33,7 +33,8 @@ class IpInfoRepositoryImpl(
 
     private suspend fun fetchPublicIpInfo(): IpInfo {
         return try {
-            val response: PublicIpResponse = client.get("http://ip-api.com/json").body()
+            // Using HTTPS for Play Store compliance
+            val response: PublicIpResponse = client.get("https://ip-api.com/json").body()
             IpInfo(
                 publicIp = response.query,
                 isp = response.isp,
@@ -47,9 +48,10 @@ class IpInfoRepositoryImpl(
 
     private fun getLocalIpInfo(): IpInfo {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        
+        val activeNetwork = connectivityManager.activeNetwork
+        val linkProperties = connectivityManager.getLinkProperties(activeNetwork)
 
-        val linkProperties = connectivityManager.getLinkProperties(connectivityManager.activeNetwork)
         val localIp = linkProperties?.linkAddresses?.firstOrNull { it.address is java.net.Inet4Address }?.address?.hostAddress ?: "N/A"
         val gateway = linkProperties?.routes?.firstOrNull { it.isDefaultRoute }?.gateway?.hostAddress ?: "N/A"
         val dnsServers = linkProperties?.dnsServers?.mapNotNull { it.hostAddress } ?: emptyList()
