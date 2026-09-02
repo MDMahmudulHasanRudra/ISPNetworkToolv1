@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.rudra.ispnetworktool"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.rudra.ispnetworktool"
