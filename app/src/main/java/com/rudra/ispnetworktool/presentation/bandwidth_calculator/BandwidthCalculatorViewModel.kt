@@ -5,10 +5,12 @@ import com.rudra.ispnetworktool.domain.logic.BandwidthCalculator
 import com.rudra.ispnetworktool.domain.model.BandwidthResult
 import com.rudra.ispnetworktool.domain.model.PackageInput
 import com.rudra.ispnetworktool.domain.model.ServiceSelection
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
 data class BandwidthCalculatorState(
     val packages: List<PackageInput> = listOf(PackageInput(5, 100)),
@@ -18,7 +20,8 @@ data class BandwidthCalculatorState(
     val result: BandwidthResult = BandwidthResult()
 )
 
-class BandwidthCalculatorViewModel : ViewModel() {
+@HiltViewModel
+class BandwidthCalculatorViewModel @Inject constructor() : ViewModel() {
     private val calculator = BandwidthCalculator()
     
     private val _state = MutableStateFlow(BandwidthCalculatorState())

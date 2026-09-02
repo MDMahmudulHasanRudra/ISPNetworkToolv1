@@ -1,4 +1,4 @@
-package com.rudra.ispnetworktools.ui
+package com.rudra.ispnetworktool.presentation.NetworkCalculator
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Transform
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -299,7 +298,7 @@ private fun VlsmCalculatorContent() {
 private fun ConversionResultRow(label: String, value: String) {
     Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
     Text(value, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodyLarge)
-    Divider()
+    HorizontalDivider()
 }
 
 @Composable
@@ -361,7 +360,7 @@ fun ResultGridItem(label: String, value: String) {
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
         Text(value, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.End)
     }
-    Divider()
+    HorizontalDivider()
 }
 
 data class NetworkExample(val name: String, val ip: String, val subnet: String)

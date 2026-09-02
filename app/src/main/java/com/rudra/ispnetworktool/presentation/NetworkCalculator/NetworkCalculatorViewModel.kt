@@ -1,14 +1,17 @@
-package com.rudra.ispnetworktools.viewmodel
+package com.rudra.ispnetworktool.presentation.NetworkCalculator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.apache.commons.net.util.SubnetUtils
+import javax.inject.Inject
 
-class NetworkCalculatorViewModel : ViewModel() {
+@HiltViewModel
+class NetworkCalculatorViewModel @Inject constructor() : ViewModel() {
 
     private val _calculationResult = MutableStateFlow("")
     val calculationResult: StateFlow<String> = _calculationResult

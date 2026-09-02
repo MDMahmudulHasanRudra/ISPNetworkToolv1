@@ -20,4 +20,7 @@ interface ToolLogDao {
 
     @Query("DELETE FROM tool_logs")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM tool_logs WHERE id = :id")
+    suspend fun getLogById(id: Int): ToolLogEntity?
 }

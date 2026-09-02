@@ -25,10 +25,6 @@ class HistoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getLogById(id: Int): ToolLogEntity? {
-        TODO("Not yet implemented")
+        return toolLogDao.getLogById(id)
     }
-
-//    override suspend fun getLogById(id: Int): ToolLogEntity? {
-//        return toolLogDao.getLogById(id)
-//    }
 }

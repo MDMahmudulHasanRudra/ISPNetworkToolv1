@@ -34,7 +34,7 @@ import com.rudra.ispnetworktool.presentation.subnet.SubnetCalculatorScreen
 import com.rudra.ispnetworktool.presentation.traceroute.TracerouteScreen
 import com.rudra.ispnetworktool.presentation.vlan_planner.VlanPlannerScreen
 import com.rudra.ispnetworktool.presentation.whois.WhoisScreen
-import com.rudra.ispnetworktools.ui.NetworkCalculatorScreen
+import com.rudra.ispnetworktool.presentation.NetworkCalculator.NetworkCalculatorScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {

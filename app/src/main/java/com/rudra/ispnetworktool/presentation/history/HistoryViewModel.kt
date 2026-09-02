@@ -16,16 +16,16 @@ class HistoryViewModel @Inject constructor(
     private val repository: HistoryRepository
 ) : ViewModel() {
 
-    val history: StateFlow<List<ToolLogEntity>> = repository.getAllLogs()
+    val logs: StateFlow<List<ToolLogEntity>> = repository.getAllLogs()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun deleteItem(id: Int) {
+    fun deleteById(id: Int) {
         viewModelScope.launch {
             repository.deleteById(id)
         }
     }
 
-    fun clearHistory() {
+    fun clearAll() {
         viewModelScope.launch {
             repository.clearAll()
         }
